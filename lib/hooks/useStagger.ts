@@ -1,45 +1,32 @@
 import { useEffect } from 'react'
-import anime from 'animejs'
-
-interface UseStaggerOptions {
-  selector: string
-  animationConfig: anime.AnimeParams
-  staggerDelay?: number
-  staggerGrid?: [number, number]
-  staggerFrom?: 'first' | 'last' | 'center' | number
-  enabled?: boolean
-}
+import anime, { AnimeParams } from 'animejs'
 
 /**
- * Custom hook for stagger animations (perfect for grids and lists)
+ * Hook for stagger animations on multiple elements
  */
-export function useStagger({
-  selector,
-  animationConfig,
-  staggerDelay = 50,
-  staggerGrid,
-  staggerFrom = 'center',
-  enabled = true,
-}: UseStaggerOptions) {
+export function useStagger(
+  selector: string,
+  animationConfig: AnimeParams,
+  staggerDelay: number = 50,
+  grid?: [number, number],
+  from: 'first' | 'last' | 'center' | number = 'center'
+) {
   useEffect(() => {
-    if (!enabled) return
-
     const elements = document.querySelectorAll(selector)
     if (elements.length === 0) return
 
-    const staggerConfig = staggerGrid
-      ? anime.stagger(staggerDelay, { grid: staggerGrid, from: staggerFrom })
-      : anime.stagger(staggerDelay, { from: staggerFrom })
+    const delay = grid 
+      ? anime.stagger(staggerDelay, { grid, from })
+      : anime.stagger(staggerDelay, { from })
 
-    const anim = anime({
+    const animation = anime({
       targets: selector,
-      delay: staggerConfig,
-      ...animationConfig,
+      delay,
+      ...animationConfig
     })
 
     return () => {
-      anim.pause()
+      animation.pause()
     }
-  }, [selector, staggerDelay, enabled])
+  }, [selector, staggerDelay, grid, from])
 }
-

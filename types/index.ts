@@ -23,6 +23,8 @@ export interface Video {
   status: 'processing' | 'ready' | 'failed'
   hlsUrl?: string
   renditions?: VideoRendition[]
+  tags?: string[]
+  transcript?: Transcript
 }
 
 export interface VideoRendition {

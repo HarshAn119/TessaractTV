@@ -39,6 +39,12 @@ export default function Header() {
             </Button>
           </Link>
           
+          <Link href="/test-video">
+            <Button variant="ghost" size="sm" className="hover:bg-surface/50">
+              Test Video
+            </Button>
+          </Link>
+          
           <Button variant="ghost" size="sm" className="md:hidden hover:bg-surface/50">
             <Search className="h-5 w-5" />
           </Button>
