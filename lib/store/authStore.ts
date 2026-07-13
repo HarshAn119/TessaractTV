@@ -11,6 +11,16 @@ interface AuthState {
   updateUser: (user: Partial<User>) => void
 }
 
+// Sync a cookie so Next.js middleware can read auth status server-side
+function setAuthCookie(token: string | null) {
+  if (typeof document === 'undefined') return
+  if (token) {
+    document.cookie = `auth-token=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`
+  } else {
+    document.cookie = 'auth-token=; path=/; max-age=0; SameSite=Lax'
+  }
+}
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
@@ -21,12 +31,14 @@ export const useAuthStore = create<AuthState>()(
         if (typeof window !== 'undefined') {
           localStorage.setItem('token', token)
         }
+        setAuthCookie(token)
         set({ token, user, isAuthenticated: true })
       },
       logout: () => {
         if (typeof window !== 'undefined') {
           localStorage.removeItem('token')
         }
+        setAuthCookie(null)
         set({ user: null, token: null, isAuthenticated: false })
       },
       updateUser: (updates) =>
@@ -37,7 +49,13 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'auth-storage',
       partialize: (state) => ({ token: state.token, user: state.user }),
+      onRehydrateStorage: () => (state) => {
+        // Re-sync cookie after hydration from localStorage
+        if (state?.token) {
+          setAuthCookie(state.token)
+          state.isAuthenticated = true
+        }
+      },
     }
   )
 )
-

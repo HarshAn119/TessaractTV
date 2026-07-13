@@ -1,75 +1,47 @@
 'use client'
 
-import { ButtonHTMLAttributes, forwardRef, useRef } from 'react'
+import { ButtonHTMLAttributes, forwardRef } from 'react'
+import { motion, HTMLMotionProps } from 'framer-motion'
 import { cn } from '@/lib/utils'
-import anime from 'animejs'
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'outline' | 'danger'
-  size?: 'sm' | 'md' | 'lg'
+  size?: 'sm' | 'md' | 'lg' | 'icon'
   isLoading?: boolean
 }
 
-const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = 'primary', size = 'md', isLoading, children, disabled, onClick, ...props }, ref) => {
-    const buttonRef = useRef<HTMLButtonElement>(null)
-    const rippleRef = useRef<HTMLSpanElement | null>(null)
+// Combine HTMLButton props with Motion props
+type MotionButtonProps = ButtonProps & HTMLMotionProps<"button">
 
-    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-      if (disabled || isLoading) return
+const Button = forwardRef<HTMLButtonElement, MotionButtonProps>(
+  ({ className, variant = 'primary', size = 'md', isLoading, children, disabled, ...props }, ref) => {
 
-      // Create ripple effect
-      const button = (ref as React.RefObject<HTMLButtonElement>)?.current || buttonRef.current
-      if (button) {
-        const rect = button.getBoundingClientRect()
-        const size = Math.max(rect.width, rect.height)
-        const x = e.clientX - rect.left - size / 2
-        const y = e.clientY - rect.top - size / 2
+    // Base styles: Modern, clickable, focus states
+    const baseStyles = 'inline-flex items-center justify-center rounded-lg font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/50 disabled:opacity-50 disabled:pointer-events-none'
 
-        const ripple = document.createElement('span')
-        ripple.style.width = ripple.style.height = size + 'px'
-        ripple.style.left = x + 'px'
-        ripple.style.top = y + 'px'
-        ripple.className = 'absolute rounded-full bg-white/30 pointer-events-none'
-        ripple.style.transform = 'scale(0)'
-        
-        button.appendChild(ripple)
-
-        anime({
-          targets: ripple,
-          scale: [0, 4],
-          opacity: [0.6, 0],
-          duration: 600,
-          easing: 'easeOutQuad',
-          complete: () => ripple.remove(),
-        })
-      }
-
-      onClick?.(e)
-    }
-
-    const baseStyles = 'inline-flex items-center justify-center rounded-lg font-semibold transition-all duration-250 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-background disabled:opacity-50 disabled:pointer-events-none relative overflow-hidden'
-    
     const variants = {
-      primary: 'btn-primary focus:ring-primary',
-      secondary: 'bg-surface-elevated text-text-primary hover:bg-surface border border-border-secondary hover:border-border-accent focus:ring-border-accent hover:shadow-lg',
-      ghost: 'text-text-primary hover:bg-surface focus:ring-surface',
-      outline: 'border border-border text-text-primary hover:bg-surface hover:border-border-accent focus:ring-border-accent',
-      danger: 'bg-error text-white hover:shadow-glow-accent focus:ring-error',
+      primary: 'bg-primary text-white hover:bg-primary-hover shadow-lg shadow-primary/25 hover:shadow-primary/40',
+      secondary: 'bg-zinc-800 text-zinc-100 hover:bg-zinc-700 border border-white/5 hover:border-white/10',
+      ghost: 'text-zinc-400 hover:text-white hover:bg-white/5',
+      outline: 'border border-zinc-800 text-zinc-300 hover:border-zinc-700 hover:text-white hover:bg-zinc-900',
+      danger: 'bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20',
     }
 
     const sizes = {
-      sm: 'h-8 px-3 text-sm',
-      md: 'h-10 px-4 text-base',
-      lg: 'h-12 px-6 text-lg',
+      sm: 'h-8 px-3 text-xs',
+      md: 'h-10 px-4 text-sm',
+      lg: 'h-12 px-6 text-base',
+      icon: 'h-10 w-10 p-2',
     }
 
     return (
-      <button
-        ref={ref || buttonRef}
+      <motion.button
+        ref={ref}
+        whileTap={{ scale: 0.95 }}
+        whileHover={{ scale: 1.02 }}
+        transition={{ type: "spring", stiffness: 400, damping: 17 }}
         className={cn(baseStyles, variants[variant], sizes[size], className)}
         disabled={disabled || isLoading}
-        onClick={handleClick}
         {...props}
       >
         {isLoading ? (
@@ -94,12 +66,12 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               />
             </svg>
-            Loading...
+            <span className="opacity-90">Loading...</span>
           </>
         ) : (
           children
         )}
-      </button>
+      </motion.button>
     )
   }
 )

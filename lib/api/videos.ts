@@ -5,10 +5,12 @@ export const videoApi = {
   /**
    * Get all videos with pagination
    */
-  getVideos: async (page: number = 1, limit: number = 20): Promise<SearchResult> => {
-    const response = await apiClient.get('/videos', {
-      params: { page, limit },
-    })
+  getVideos: async (page: number = 1, limit: number = 20, q?: string, category?: string): Promise<SearchResult> => {
+    const params: any = { page, limit };
+    if (q) params.q = q;
+    if (category && category !== 'All') params.category = category;
+    
+    const response = await apiClient.get('/videos', { params })
     return response.data
   },
 
@@ -34,12 +36,12 @@ export const videoApi = {
    * Upload a new video
    */
   uploadVideo: async (formData: FormData): Promise<Video> => {
-    const response = await apiClient.post('/videos', formData, {
+    const response = await apiClient.post('/videos/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     })
-    return response.data
+    return response.data.video;
   },
 
   /**

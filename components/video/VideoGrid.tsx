@@ -1,33 +1,25 @@
 'use client'
 
-import { useEffect } from 'react'
-import { useStagger } from '@/lib/hooks/useStagger'
 import { Video } from '@/types'
 import VideoCard from './VideoCard'
 import { cn } from '@/lib/utils'
+import { StaggerContainer, ScaleIn } from '@/components/ui/MotionPrimitives'
 
 interface VideoGridProps {
   videos: Video[]
   className?: string
   columns?: 2 | 3 | 4 | 5
-  staggerDelay?: number
+  staggerDelay?: number // ms between each card animating in
+  onDelete?: (videoId: string) => void
 }
 
-export default function VideoGrid({ 
-  videos, 
-  className, 
-  columns = 4, 
-  staggerDelay = 50 
+export default function VideoGrid({
+  videos,
+  className,
+  columns = 4,
+  staggerDelay = 50,
+  onDelete,
 }: VideoGridProps) {
-  
-  // Apply stagger animation to video cards
-  useStagger('.video-card', {
-    opacity: [0, 1],
-    translateY: [60, 0],
-    scale: [0.8, 1],
-    duration: 600,
-    easing: 'easeOutExpo'
-  }, staggerDelay)
 
   const gridCols = {
     2: 'grid-cols-1 md:grid-cols-2',
@@ -39,26 +31,32 @@ export default function VideoGrid({
   if (videos.length === 0) {
     return (
       <div className="text-center py-12">
-        <div className="text-6xl mb-4">🎬</div>
-        <h3 className="text-xl font-semibold text-text-primary mb-2">No videos found</h3>
-        <p className="text-text-secondary">Check back later for new content</p>
+        <div className="text-6xl mb-4 animate-bounce">🎬</div>
+        <h3 className="text-xl font-semibold text-white mb-2">No videos found</h3>
+        <p className="text-zinc-500">Check back later for new content</p>
       </div>
     )
   }
 
   return (
-    <div className={cn(
-      'video-grid grid gap-6',
-      gridCols[columns],
-      className
-    )}>
+    <StaggerContainer
+      className={cn(
+        'grid gap-6',
+        gridCols[columns],
+        className
+      )}
+      staggerChildren={staggerDelay / 1000}
+    >
       {videos.map((video, index) => (
-        <VideoCard
-          key={video.id}
-          video={video}
-          index={index}
-        />
+        <ScaleIn key={video.id} className="h-full">
+          <VideoCard
+            video={video}
+            index={index}
+            className="h-full"
+            onDelete={onDelete}
+          />
+        </ScaleIn>
       ))}
-    </div>
+    </StaggerContainer>
   )
 }

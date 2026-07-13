@@ -1,4 +1,4 @@
-import { AnimeParams } from 'animejs'
+import anime, { AnimeParams } from 'animejs'
 
 /**
  * Common animation presets for consistent animations across the app
